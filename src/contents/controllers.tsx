@@ -2,6 +2,8 @@ import cssText from "data-text:~style.css"
 import type { PlasmoGetOverlayAnchor } from "plasmo"
 import { useEffect, useRef, useState } from "react"
 
+import { useWindowSelection } from "~hooks/useWindowSelection"
+
 export const getStyle = () => {
   const style = document.createElement("style")
   style.textContent = cssText
@@ -10,8 +12,15 @@ export const getStyle = () => {
 
 const Controllers = () => {
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null)
-  const [isSerifSelected, setIsSerifSelected] = useState(false)
-  const [actions, setActions] = useState([])
+  const { selection } = useWindowSelection()
+  console.log("111", selection?.toString?.())
+
+  const [actions, setActions] = useState({
+    isSerifSelected: false,
+    isBoldSelected: false,
+    isItalicSelected: false,
+    isBoldItalicSelected: false
+  })
   const observerRef = useRef<MutationObserver | null>(null)
 
   const isEditableElement = (element: HTMLElement): boolean => {
@@ -166,7 +175,7 @@ const Controllers = () => {
     // Define base Unicode code points for different styles
 
     // Choose the correct style based on isSerifSelected
-    const selectedStyle = isSerifSelected
+    const selectedStyle = actions.isSerifSelected
       ? UNICODES[styleType].serif
       : UNICODES[styleType].sans
 
@@ -258,28 +267,12 @@ const Controllers = () => {
     )
   }
 
-  // const isBold = (text) => {
-  //   const boldRegex = /[\u{1D400}-\u{1D7FF}]/u
-  //   return boldRegex.test(text)
-  // }
-
-  // const isItalic = (text) => {
-  //   const italicRegex = /[\u{1D434}-\u{1D44D}]|[\u{1D608}-\u{1D622}]/u // Regular and sans-serif italic
-  //   return italicRegex.test(text)
-  // }
-
-  // const isBoldItalic = (text) => {
-  //   const boldItalicRegex = /[\u{1D468}-\u{1D481}]|[\u{1D63C}-\u{1D655}]/u // Regular and sans-serif bold italic
-  //   return boldItalicRegex.test(text)
-  // }
   const toggle = (event: React.MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
 
     if (!focusedElement) return
 
-    const selection = window.getSelection()
-    console.log("Selection object:", selection)
     if (!selection || selection.rangeCount === 0) {
       console.log("No selection or range count is zero")
       return
@@ -296,17 +289,7 @@ const Controllers = () => {
     }
 
     // let newText = selectedText.normalize("NFKD")
-    // if (actions.includes("bold")) {
-    //   newText = convertToBold(newText)
-    // } else if (actions.includes("italic")) {
-    // }
-    // newText = convertToItalic(newText)
-    // let newText = convertText(selectedText, "boldItalic")
 
-    console.log("isSerif", isSerif(selectedText))
-    console.log("isBold", isBold(selectedText))
-    console.log("isItalic", isItalic(selectedText))
-    console.log("isBoldItalic", isBoldItalic(selectedText))
     const newText = convertText(selectedText, "bold")
 
     const newTextNode = document.createTextNode(newText)
@@ -360,8 +343,13 @@ const Controllers = () => {
       <button
         className={`hover:opacity-80 h-8 transition-all bg-zinc-200 p-2 flex items-center justify-center rounded-md`}
         onMouseDown={(e) => e.preventDefault()}
-        onClick={() => setIsSerifSelected((prev) => !prev)}>
-        {isSerifSelected ? "Serif" : "Sans"}
+        onClick={() =>
+          setActions((prev) => ({
+            ...prev,
+            isSerifSelected: !prev.isSerifSelected
+          }))
+        }>
+        {actions.isSerifSelected ? "Serif" : "Sans"}
       </button>
     </div>
   )
