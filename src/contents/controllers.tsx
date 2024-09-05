@@ -70,17 +70,15 @@ const Controllers = () => {
   const [actions, setActions] = useState({
     isSerifSelected: false,
     isBoldSelected: false,
-    isItalicSelected: false,
-    isBoldItalicSelected: false
+    isItalicSelected: false
   })
   const observerRef = useRef<MutationObserver | null>(null)
 
   useEffect(() => {
     setActions({
       isSerifSelected: isSerif(selectedText),
-      isBoldSelected: isBold(selectedText),
-      isItalicSelected: isItalic(selectedText),
-      isBoldItalicSelected: isBoldItalic(selectedText)
+      isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
+      isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText)
     })
   }, [selectedText])
 
@@ -184,16 +182,13 @@ const Controllers = () => {
     let styleType
     if (localActions.isBoldSelected) styleType = "bold"
     if (localActions.isItalicSelected) styleType = "italic"
-    if (
-      (localActions.isBoldSelected && localActions.isItalicSelected) ||
-      localActions.isBoldItalicSelected
-    ) {
-      localActions.isBoldItalicSelected = true
+    if (localActions.isBoldSelected && localActions.isItalicSelected) {
       styleType = "boldItalic"
     }
 
+    text = text.normalize("NFKD")
     console.log("localActions", localActions)
-    console.log("localActions", localActions)
+
     if (!styleType) return text
     // Choose the correct style based on isSerifSelected
     const selectedStyle = localActions.isSerifSelected
@@ -201,7 +196,6 @@ const Controllers = () => {
       : UNICODES[styleType].sans
 
     setActions(localActions)
-    text = text.normalize("NFKD")
     return text
       .split("")
       .map((char) => {
@@ -350,7 +344,7 @@ const Controllers = () => {
         transform: `translateY(-100%)`
       }}>
       <button
-        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isBoldSelected || actions.isBoldItalicSelected ? "bg-zinc-200" : ""}`}
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isBoldSelected || (actions.isBoldSelected && actions.isItalicSelected) ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {
           const _actions = {
@@ -362,7 +356,7 @@ const Controllers = () => {
         B
       </button>
       <button
-        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isItalicSelected || actions.isBoldItalicSelected ? "bg-zinc-200" : ""}`}
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isItalicSelected || (actions.isBoldSelected && actions.isItalicSelected) ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {
           const _actions = {
