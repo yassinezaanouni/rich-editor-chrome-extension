@@ -181,18 +181,22 @@ const Controllers = () => {
   }, [])
 
   const convertText = (text, localActions) => {
-    console.log("Converting text", text, localActions)
     let styleType
     if (localActions.isBoldSelected) styleType = "bold"
     if (localActions.isItalicSelected) styleType = "italic"
-    if (localActions.isBoldSelected && localActions.isItalicSelected) {
-      localActions.isBoldItalic = true
+    if (
+      (localActions.isBoldSelected && localActions.isItalicSelected) ||
+      localActions.isBoldItalicSelected
+    ) {
+      localActions.isBoldItalicSelected = true
       styleType = "boldItalic"
     }
 
+    console.log("localActions", localActions)
+    console.log("localActions", localActions)
     if (!styleType) return text
     // Choose the correct style based on isSerifSelected
-    const selectedStyle = actions.isSerifSelected
+    const selectedStyle = localActions.isSerifSelected
       ? UNICODES[styleType].serif
       : UNICODES[styleType].sans
 
