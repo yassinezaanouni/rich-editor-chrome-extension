@@ -12,8 +12,7 @@ export const getStyle = () => {
 
 const Controllers = () => {
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null)
-  const { selection } = useWindowSelection()
-  console.log("111", selection?.toString?.())
+  const { selection, text: selectedText } = useWindowSelection()
 
   const [actions, setActions] = useState({
     isSerifSelected: false,
@@ -22,6 +21,15 @@ const Controllers = () => {
     isBoldItalicSelected: false
   })
   const observerRef = useRef<MutationObserver | null>(null)
+
+  useEffect(() => {
+    setActions({
+      isSerifSelected: isSerif(selectedText),
+      isBoldSelected: isBold(selectedText),
+      isItalicSelected: isItalic(selectedText),
+      isBoldItalicSelected: isBoldItalic(selectedText)
+    })
+  }, [selectedText])
 
   const isEditableElement = (element: HTMLElement): boolean => {
     const editableTypes = [
@@ -255,7 +263,6 @@ const Controllers = () => {
 
     const code = text.codePointAt(0)
     const ranges = UNICODES.boldItalic
-    console.log(code, ranges.serif.upperA, ranges.serif.upperZ)
 
     return (
       (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
@@ -267,7 +274,7 @@ const Controllers = () => {
     )
   }
 
-  const toggle = (event: React.MouseEvent) => {
+  const toggle = (event: React.MouseEvent, textStyle) => {
     event.preventDefault()
     event.stopPropagation()
 
@@ -280,9 +287,6 @@ const Controllers = () => {
 
     const range = selection.getRangeAt(0)
 
-    const selectedText = selection.toString()
-    console.log("Selected text:", selectedText)
-
     if (selectedText.length === 0) {
       console.log("Selected text length is zero")
       return
@@ -290,7 +294,7 @@ const Controllers = () => {
 
     // let newText = selectedText.normalize("NFKD")
 
-    const newText = convertText(selectedText, "bold")
+    const newText = convertText(selectedText, textStyle)
 
     const newTextNode = document.createTextNode(newText)
     range.deleteContents()
@@ -329,15 +333,15 @@ const Controllers = () => {
         transform: `translateY(-100%)`
       }}>
       <button
-        className=" size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md"
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isBoldSelected ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
-        onClick={toggle}>
+        onClick={(e) => toggle(e, "bold")}>
         B
       </button>
       <button
-        className=" size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md"
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isItalicSelected ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
-        onClick={toggle}>
+        onClick={(e) => toggle(e, "italic")}>
         I
       </button>
       <button
