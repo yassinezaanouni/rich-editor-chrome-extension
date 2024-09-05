@@ -9,59 +9,6 @@ export const getStyle = () => {
   style.textContent = cssText
   return style
 }
-const UNICODES = {
-  bold: {
-    serif: {
-      lowerA: 0x1d41a,
-      lowerZ: 0x1d433,
-      upperA: 0x1d400,
-      upperZ: 0x1d419,
-      zero: 0x1d7ce,
-      nine: 0x1d7d7
-    }, // Bold serif
-    sans: {
-      lowerA: 0x1d5ee,
-      lowerZ: 0x1d607,
-      upperA: 0x1d5d4,
-      upperZ: 0x1d5ed,
-      zero: 0x1d7ec,
-      nine: 0x1d7f5
-    } // Bold sans serif
-  },
-  italic: {
-    // There are no italic numbers in Unicode, so we use the regular numbers
-    serif: {
-      lowerA: 0x1d44e,
-      lowerZ: 0x1d467,
-      upperA: 0x1d434,
-      upperZ: 0x1d44d
-    }, // Italic serif
-    sans: {
-      lowerA: 0x1d622,
-      lowerZ: 0x1d63b,
-      upperA: 0x1d608,
-      upperZ: 0x1d621
-    } // Italic sans serif
-  },
-  boldItalic: {
-    serif: {
-      lowerA: 0x1d482,
-      lowerZ: 0x1d49b,
-      upperA: 0x1d468,
-      upperZ: 0x1d481,
-      zero: 0x1d7ce,
-      nine: 0x1d7d7
-    }, // Italic bold serif
-    sans: {
-      lowerA: 0x1d656,
-      lowerZ: 0x1d66f,
-      upperA: 0x1d63c,
-      upperZ: 0x1d655,
-      zero: 0x1d7ec,
-      nine: 0x1d7f5
-    } // Italic bold sans serif
-  }
-}
 
 const Controllers = () => {
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null)
@@ -179,14 +126,64 @@ const Controllers = () => {
       observerRef.current?.disconnect()
     }
   }, [])
-
-  const convertText = (text, localActions) => {
-    console.log("Converting text", text, localActions)
+  const UNICODES = {
+    bold: {
+      serif: {
+        lowerA: 0x1d41a,
+        lowerZ: 0x1d433,
+        upperA: 0x1d400,
+        upperZ: 0x1d419,
+        zero: 0x1d7ce,
+        nine: 0x1d7d7
+      }, // Bold serif
+      sans: {
+        lowerA: 0x1d5ee,
+        lowerZ: 0x1d607,
+        upperA: 0x1d5d4,
+        upperZ: 0x1d5ed,
+        zero: 0x1d7ec,
+        nine: 0x1d7f5
+      } // Bold sans serif
+    },
+    italic: {
+      // There are no italic numbers in Unicode, so we use the regular numbers
+      serif: {
+        lowerA: 0x1d44e,
+        lowerZ: 0x1d467,
+        upperA: 0x1d434,
+        upperZ: 0x1d44d
+      }, // Italic serif
+      sans: {
+        lowerA: 0x1d622,
+        lowerZ: 0x1d63b,
+        upperA: 0x1d608,
+        upperZ: 0x1d621
+      } // Italic sans serif
+    },
+    boldItalic: {
+      serif: {
+        lowerA: 0x1d482,
+        lowerZ: 0x1d49b,
+        upperA: 0x1d468,
+        upperZ: 0x1d481,
+        zero: 0x1d7ce,
+        nine: 0x1d7d7
+      }, // Italic bold serif
+      sans: {
+        lowerA: 0x1d656,
+        lowerZ: 0x1d66f,
+        upperA: 0x1d63c,
+        upperZ: 0x1d655,
+        zero: 0x1d7ec,
+        nine: 0x1d7f5
+      } // Italic bold sans serif
+    }
+  }
+  const convertText = (text) => {
     let styleType
-    if (localActions.isBoldSelected) styleType = "bold"
-    if (localActions.isItalicSelected) styleType = "italic"
-    if (localActions.isBoldSelected && localActions.isItalicSelected) {
-      localActions.isBoldItalic = true
+    if (actions.isBoldSelected) styleType = "bold"
+    if (actions.isItalicSelected) styleType = "italic"
+    if (actions.isBoldSelected && actions.isItalicSelected) {
       styleType = "boldItalic"
     }
 
@@ -196,29 +193,29 @@ const Controllers = () => {
       ? UNICODES[styleType].serif
       : UNICODES[styleType].sans
 
-    setActions(localActions)
-    text = text.normalize("NFKD")
-    return text
-      .split("")
-      .map((char) => {
-        let charCode = char.charCodeAt(0)
-
-        if (charCode >= 97 && charCode <= 122) {
-          console.log("'a' to 'z'")
-          // 'a' to 'z'
-          return String.fromCodePoint(selectedStyle.lowerA + (charCode - 97))
-        } else if (charCode >= 65 && charCode <= 90) {
-          console.log("'A' to 'Z'")
-          // 'A' to 'Z'
-          return String.fromCodePoint(selectedStyle.upperA + (charCode - 65))
-        } else if (charCode >= 48 && charCode <= 57 && styleType !== "italic") {
-          console.log("'0' to '9'")
-          // '0' to '9'
-          return String.fromCodePoint(selectedStyle.zero + (charCode - 48))
-        }
-        return char // Non-alphabetical and non-numeric characters are returned as is
-      })
-      .join("")
+    return console.log(
+      text
+        .split("")
+        .map((char) => {
+          const charCode = char.charCodeAt(0)
+          if (charCode >= 97 && charCode <= 122) {
+            // 'a' to 'z'
+            return String.fromCodePoint(selectedStyle.lowerA + (charCode - 97))
+          } else if (charCode >= 65 && charCode <= 90) {
+            // 'A' to 'Z'
+            return String.fromCodePoint(selectedStyle.upperA + (charCode - 65))
+          } else if (
+            charCode >= 48 &&
+            charCode <= 57 &&
+            styleType !== "italic"
+          ) {
+            // '0' to '9'
+            return String.fromCodePoint(selectedStyle.zero + (charCode - 48))
+          }
+          return char // Non-alphabetical and non-numeric characters are returned as is
+        })
+        .join("")
+    )
   }
 
   function isSerif(text) {
@@ -289,10 +286,12 @@ const Controllers = () => {
     )
   }
 
-  const toggle = (event: React.MouseEvent, localActions) => {
-    event.preventDefault()
-    event.stopPropagation()
+  useEffect(() => {
+    console.log("Actions", actions)
+    toggle()
+  }, [actions])
 
+  const toggle = () => {
     if (!focusedElement) return
 
     if (!selection || selection.rangeCount === 0) {
@@ -307,9 +306,11 @@ const Controllers = () => {
       return
     }
 
-    const newText = convertText(selectedText, localActions)
+    // let newText = selectedText.normalize("NFKD")
 
+    const newText = convertText(selectedText)
     const newTextNode = document.createTextNode(newText)
+    console.log({ newTextNode })
     range.deleteContents()
     range.insertNode(newTextNode)
 
@@ -346,39 +347,40 @@ const Controllers = () => {
         transform: `translateY(-100%)`
       }}>
       <button
-        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isBoldSelected || actions.isBoldItalicSelected ? "bg-zinc-200" : ""}`}
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isBoldSelected ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {
-          const _actions = {
-            ...actions,
-            isBoldSelected: !actions.isBoldSelected
-          }
-          toggle(e, _actions)
+          e.preventDefault()
+          e.stopPropagation()
+          setActions((prev) => ({
+            ...prev,
+            isBoldSelected: !prev.isBoldSelected
+          }))
         }}>
         B
       </button>
       <button
-        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isItalicSelected || actions.isBoldItalicSelected ? "bg-zinc-200" : ""}`}
+        className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${actions.isItalicSelected ? "bg-zinc-200" : ""}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={(e) => {
-          const _actions = {
-            ...actions,
-            isItalicSelected: !actions.isItalicSelected
-          }
-          toggle(e, _actions)
+          e.preventDefault()
+          e.stopPropagation()
+          setActions((prev) => ({
+            ...prev,
+            isItalicSelected: !prev.isItalicSelected
+          }))
         }}>
         I
       </button>
       <button
         className={`hover:opacity-80 h-8 transition-all bg-zinc-200 p-2 flex items-center justify-center rounded-md`}
         onMouseDown={(e) => e.preventDefault()}
-        onClick={(e) => {
-          const _actions = {
-            ...actions,
-            isSerifSelected: !actions.isSerifSelected
-          }
-          toggle(e, _actions)
-        }}>
+        onClick={() =>
+          setActions((prev) => ({
+            ...prev,
+            isSerifSelected: !prev.isSerifSelected
+          }))
+        }>
         {actions.isSerifSelected ? "Serif" : "Sans"}
       </button>
     </div>
