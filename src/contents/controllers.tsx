@@ -1,14 +1,10 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoGetOverlayAnchor } from "plasmo"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { StyleButton } from "~components/StyleButton"
+import { useFocusListeners } from "~hooks/useFocusListeners"
 import { useWindowSelection } from "~hooks/useWindowSelection"
-import {
-  isEditableElement,
-  removeListeners,
-  setupListeners
-} from "~utils/domUtils"
 import {
   convertText,
   isBold,
@@ -24,14 +20,13 @@ export const getStyle = () => {
 }
 
 const Controllers = () => {
-  const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null)
+  const { focusedElement } = useFocusListeners()
   const { selection, text: selectedText } = useWindowSelection()
   const [actions, setActions] = useState({
     isSerifSelected: false,
     isBoldSelected: false,
     isItalicSelected: false
   })
-  const observerRef = useRef<MutationObserver | null>(null)
 
   useEffect(() => {
     setActions({
@@ -40,45 +35,6 @@ const Controllers = () => {
       isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText)
     })
   }, [selectedText])
-
-  const handleFocus = (event: FocusEvent) => {
-    const target = event.target as HTMLElement
-    if (isEditableElement(target)) {
-      setFocusedElement(target)
-    }
-  }
-
-  const handleBlur = () => setFocusedElement(null)
-
-  useEffect(() => {
-    setupListeners(document, handleFocus, handleBlur)
-    const activeElement = document.activeElement
-    if (activeElement && isEditableElement(activeElement as HTMLElement)) {
-      setFocusedElement(activeElement as HTMLElement)
-    }
-
-    observerRef.current = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "childList") {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              setupListeners(node as HTMLElement, handleFocus, handleBlur)
-            }
-          })
-        }
-      })
-    })
-
-    observerRef.current.observe(document.body, {
-      childList: true,
-      subtree: true
-    })
-
-    return () => {
-      removeListeners(document, handleFocus, handleBlur)
-      observerRef.current?.disconnect()
-    }
-  }, [])
 
   const toggle = (event: React.MouseEvent, localActions) => {
     event.preventDefault()
@@ -114,10 +70,6 @@ const Controllers = () => {
       range.insertNode(document.createTextNode(newText))
       range.setStart(range.endContainer, range.endOffset)
     }
-
-    // Trigger input event to update the element's value
-    // const inputEvent = new Event("input", { bubbles: true, cancelable: true })
-    // focusedElement.dispatchEvent(inputEvent)
 
     // Refocus the element
     focusedElement.focus()
