@@ -110,7 +110,7 @@ const Controllers = () => {
         onClick={(e) => toggle(e, "isItalicSelected")}
       />
       <StyleButton
-        label="U̲"
+        label="𝚄̲"
         isActive={actions.isUnderlineSelected}
         onClick={(e) => toggle(e, "isUnderlineSelected")}
       />
