@@ -1,36 +1,54 @@
 import { UNICODES } from "~utils/constants"
 
-export const convertText = (text: string, localActions: any) => {
-  let styleType: "bold" | "italic" | "boldItalic" | null = null
-  if (localActions.isBoldSelected) styleType = "bold"
-  if (localActions.isItalicSelected) styleType = "italic"
-  if (localActions.isBoldSelected && localActions.isItalicSelected) {
-    styleType = "boldItalic"
-  }
+const UNDERLINE_CHAR = "\u0332" // Unicode for "combining low line" (single underline)
 
+export const convertText = (text: string, localActions: any) => {
   text = text.normalize("NFKD")
 
-  if (!styleType) return text
+  // Remove existing underlines first
+  text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
 
-  const selectedStyle = localActions.isSerifSelected
-    ? UNICODES[styleType].serif
-    : UNICODES[styleType].sans
-
-  return text
+  let result = text
     .split("")
     .map((char) => {
       let charCode = char.charCodeAt(0)
+      let newChar = char
 
-      if (charCode >= 97 && charCode <= 122) {
-        return String.fromCodePoint(selectedStyle.lowerA + (charCode - 97))
-      } else if (charCode >= 65 && charCode <= 90) {
-        return String.fromCodePoint(selectedStyle.upperA + (charCode - 65))
-      } else if (charCode >= 48 && charCode <= 57 && styleType !== "italic") {
-        return String.fromCodePoint(selectedStyle.zero + (charCode - 48))
+      // Determine the style to apply
+      let styleType: "normal" | "bold" | "italic" | "boldItalic" = "normal"
+      if (localActions.isBoldSelected && localActions.isItalicSelected) {
+        styleType = "boldItalic"
+      } else if (localActions.isBoldSelected) {
+        styleType = "bold"
+      } else if (localActions.isItalicSelected) {
+        styleType = "italic"
       }
-      return char
+
+      // Apply the style if it's not "normal"
+      if (styleType !== "normal") {
+        const selectedStyle = localActions.isSerifSelected
+          ? UNICODES[styleType].serif
+          : UNICODES[styleType].sans
+
+        if (charCode >= 97 && charCode <= 122) {
+          newChar = String.fromCodePoint(selectedStyle.lowerA + (charCode - 97))
+        } else if (charCode >= 65 && charCode <= 90) {
+          newChar = String.fromCodePoint(selectedStyle.upperA + (charCode - 65))
+        } else if (charCode >= 48 && charCode <= 57 && styleType !== "italic") {
+          newChar = String.fromCodePoint(selectedStyle.zero + (charCode - 48))
+        }
+      }
+
+      // Apply underline if selected
+      if (localActions.isUnderlineSelected) {
+        newChar += UNDERLINE_CHAR
+      }
+
+      return newChar
     })
     .join("")
+
+  return result
 }
 
 export function isSerif(text: string) {
@@ -104,4 +122,7 @@ export function isBoldItalic(text: string) {
     (code >= ranges.sans.upperA && code <= ranges.sans.upperZ) ||
     (code >= ranges.sans.zero && code <= ranges.sans.nine)
   )
+}
+export function isUnderlined(text: string) {
+  return text.includes(UNDERLINE_CHAR)
 }

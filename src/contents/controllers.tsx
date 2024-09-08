@@ -10,7 +10,8 @@ import {
   isBold,
   isBoldItalic,
   isItalic,
-  isSerif
+  isSerif,
+  isUnderlined
 } from "~utils/textUtils"
 
 export const getStyle = () => {
@@ -25,21 +26,20 @@ const Controllers = () => {
   const [actions, setActions] = useState({
     isSerifSelected: false,
     isBoldSelected: false,
-    isItalicSelected: false
+    isItalicSelected: false,
+    isUnderlineSelected: false
   })
 
   useEffect(() => {
     setActions({
       isSerifSelected: isSerif(selectedText),
       isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
-      isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText)
+      isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText),
+      isUnderlineSelected: isUnderlined(selectedText)
     })
   }, [selectedText])
 
-  const toggle = (event: React.MouseEvent, localActions) => {
-    event.preventDefault()
-    event.stopPropagation()
-
+  const applyStyle = (newActions: typeof actions) => {
     if (
       !focusedElement ||
       !selection ||
@@ -49,7 +49,7 @@ const Controllers = () => {
       return
 
     const range = selection.getRangeAt(0)
-    const newText = convertText(selectedText, localActions)
+    const newText = convertText(selectedText, newActions)
 
     if (
       focusedElement instanceof HTMLInputElement ||
@@ -71,8 +71,19 @@ const Controllers = () => {
       range.setStart(range.endContainer, range.endOffset)
     }
 
-    // Refocus the element
     focusedElement.focus()
+  }
+
+  const toggle = (
+    event: React.MouseEvent,
+    styleToToggle: keyof typeof actions
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const newActions = { ...actions, [styleToToggle]: !actions[styleToToggle] }
+    setActions(newActions)
+    applyStyle(newActions)
   }
 
   if (!focusedElement) return null
@@ -91,24 +102,23 @@ const Controllers = () => {
       <StyleButton
         label="𝗕"
         isActive={actions.isBoldSelected}
-        onClick={(e) =>
-          toggle(e, { ...actions, isBoldSelected: !actions.isBoldSelected })
-        }
+        onClick={(e) => toggle(e, "isBoldSelected")}
       />
       <StyleButton
         label="𝐼"
         isActive={actions.isItalicSelected}
-        onClick={(e) =>
-          toggle(e, { ...actions, isItalicSelected: !actions.isItalicSelected })
-        }
+        onClick={(e) => toggle(e, "isItalicSelected")}
+      />
+      <StyleButton
+        label="U̲"
+        isActive={actions.isUnderlineSelected}
+        onClick={(e) => toggle(e, "isUnderlineSelected")}
       />
       <StyleButton
         label={actions.isSerifSelected ? "Serif" : "Sans"}
         isActive={true}
         className="dark:bg-muted w-auto p-2"
-        onClick={(e) =>
-          toggle(e, { ...actions, isSerifSelected: !actions.isSerifSelected })
-        }
+        onClick={(e) => toggle(e, "isSerifSelected")}
       />
     </div>
   )
