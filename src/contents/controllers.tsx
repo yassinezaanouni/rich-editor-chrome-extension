@@ -34,11 +34,15 @@ const Controllers = () => {
   })
 
   useEffect(() => {
+    let _selectedText = selectedText
+    if (hasDotAtLineStart(_selectedText)) {
+      _selectedText = _selectedText.replace(/• /g, "")
+    }
     setActions({
-      isSerifSelected: isSerif(selectedText),
-      isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
-      isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText),
-      isUnderlineSelected: isUnderlined(selectedText),
+      isSerifSelected: isSerif(_selectedText),
+      isBoldSelected: isBold(_selectedText) || isBoldItalic(_selectedText),
+      isItalicSelected: isItalic(_selectedText) || isBoldItalic(_selectedText),
+      isUnderlineSelected: isUnderlined(_selectedText),
       isDotSelected: hasDotAtLineStart(selectedText)
     })
   }, [selectedText])

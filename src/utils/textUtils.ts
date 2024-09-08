@@ -4,9 +4,7 @@ const UNDERLINE_CHAR = "\u0332" // Unicode for "combining low line" (single unde
 
 export const convertText = (text: string, localActions: any) => {
   text = text.normalize("NFKD")
-  if (hasDotAtLineStart(text)) {
-    text = text.replace(/• /g, "")
-  }
+
   text = toggleLineDotStart(text, localActions.isDotSelected)
 
   // Remove existing underlines first
@@ -83,31 +81,48 @@ export function isBold(text: string) {
   if (!code) return false
 
   const ranges = UNICODES.bold
+  let boldCount = 0
 
-  return (
-    (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
-    (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
-    (code >= ranges.serif.zero && code <= ranges.serif.nine) ||
-    (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
-    (code >= ranges.sans.upperA && code <= ranges.sans.upperZ) ||
-    (code >= ranges.sans.zero && code <= ranges.sans.nine)
-  )
+  for (let i = 0; i < text.length; i++) {
+    const code = text.codePointAt(i)
+    if (!code) continue
+
+    if (
+      (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
+      (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
+      (code >= ranges.serif.zero && code <= ranges.serif.nine) ||
+      (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
+      (code >= ranges.sans.upperA && code <= ranges.sans.upperZ) ||
+      (code >= ranges.sans.zero && code <= ranges.sans.nine)
+    ) {
+      boldCount++
+    }
+  }
+  return boldCount > text.length / 4 // when italic, the length of the text is doubled
 }
 
 export function isItalic(text: string) {
   if (text.length === 0) return false
 
-  const code = text.codePointAt(0)
-  if (!code) return false
-
   const ranges = UNICODES.italic
+  let italicCount = 0
 
-  return (
-    (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
-    (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
-    (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
-    (code >= ranges.sans.upperA && code <= ranges.sans.upperZ)
-  )
+  for (let i = 0; i < text.length; i++) {
+    const code = text.codePointAt(i)
+    if (!code) continue
+
+    if (
+      (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
+      (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
+      (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
+      (code >= ranges.sans.upperA && code <= ranges.sans.upperZ)
+    )
+      italicCount++
+    // Skip the low surrogate for surrogate pairs
+  }
+
+  // Consider it italic if more than half of the characters are italic
+  return italicCount > text.length / 4 // when italic, the length of the text is doubled
 }
 
 export function isBoldItalic(text: string) {
