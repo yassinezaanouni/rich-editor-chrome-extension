@@ -25,6 +25,7 @@ export const getStyle = () => {
 
 const Controllers = () => {
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null)
+  const [position, setPosition] = useState({ top: 100, left: 100 })
   const { selection, text: selectedText } = useWindowSelection()
   const [actions, setActions] = useState({
     isSerifSelected: false,
@@ -33,13 +34,78 @@ const Controllers = () => {
   })
   const observerRef = useRef<MutationObserver | null>(null)
 
+  const markSelection = () => {
+    const markerTextChar = "\ufeff"
+    const markerTextCharEntity = "&#xfeff;"
+
+    let markerEl
+    const markerId = `sel_${new Date().getTime()}_${Math.random().toString().substr(2)}`
+
+    let selectionEl
+
+    const doc = window.document
+    let sel, range
+
+    // Branch for IE <= 8
+    // if (doc.selection && doc.selection.createRange) {
+    //     // Clone the TextRange and collapse
+    //     range = doc.selection.createRange().duplicate();
+    //     range.collapse(false);
+
+    //     // Create the marker element containing a single invisible character by creating literal HTML and insert it
+    //     range.pasteHTML(`<span id="${markerId}" style="position: relative;">${markerTextCharEntity}</span>`);
+    //     markerEl = doc.getElementById(markerId);
+    // } else
+    if (selectedText) {
+      sel = window.getSelection()
+      range = sel.getRangeAt(0).cloneRange()
+      range.collapse(false)
+
+      // Create the marker element containing a single invisible character using DOM methods and insert it
+      markerEl = doc.createElement("span")
+      markerEl.id = markerId
+      markerEl.appendChild(doc.createTextNode(markerTextChar))
+      range.insertNode(markerEl)
+    }
+
+    if (markerEl) {
+      // Lazily create the element to be placed next to the selection
+
+      // Find markerEl position
+      let obj = markerEl
+      let left = 0,
+        top = 0
+      while (obj) {
+        left += obj.offsetLeft
+        top += obj.offsetTop
+        obj = obj.offsetParent
+      }
+      setPosition({ top, left })
+
+      markerEl.parentNode.removeChild(markerEl)
+    }
+  }
+
   useEffect(() => {
     setActions({
       isSerifSelected: isSerif(selectedText),
       isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
       isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText)
     })
+    markSelection()
   }, [selectedText])
+
+  useEffect(() => {
+    const onMouseUp = () => {
+      markSelection()
+    }
+
+    document.addEventListener("mouseup", onMouseUp)
+
+    return () => {
+      document.removeEventListener("mouseup", onMouseUp)
+    }
+  }, [])
 
   const handleFocus = (event: FocusEvent) => {
     const target = event.target as HTMLElement
@@ -123,7 +189,7 @@ const Controllers = () => {
     focusedElement.focus()
   }
 
-  if (!focusedElement) return null
+  // if (!focusedElement) return null
 
   const { top = 0, left = 0 } = focusedElement?.getBoundingClientRect() || {}
 
@@ -132,9 +198,9 @@ const Controllers = () => {
       className="border-y flex items-center gap-1 p-2 overflow-hidden text-black bg-white border-black rounded-lg"
       style={{
         position: "absolute",
-        top: top,
-        left: left,
-        transform: `translateY(-100%)`
+        top: position.top,
+        left: position.left
+        // transform: `translateY(-100%)`
       }}>
       <StyleButton
         label="B"
