@@ -4,6 +4,10 @@ const UNDERLINE_CHAR = "\u0332" // Unicode for "combining low line" (single unde
 
 export const convertText = (text: string, localActions: any) => {
   text = text.normalize("NFKD")
+  if (hasDotAtLineStart(text)) {
+    text = text.replace(/• /g, "")
+  }
+  text = toggleLineDotStart(text, localActions.isDotSelected)
 
   // Remove existing underlines first
   text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
@@ -125,4 +129,28 @@ export function isBoldItalic(text: string) {
 }
 export function isUnderlined(text: string) {
   return text.includes(UNDERLINE_CHAR)
+}
+
+export function toggleLineDotStart(
+  text: string,
+  isDotSelected: boolean
+): string {
+  return text
+    .split("\n")
+    .map((line) => {
+      const trimmedLine = line.trim()
+      if (isDotSelected) {
+        return trimmedLine.startsWith("•") ? line : `• ${line}`
+      } else {
+        return trimmedLine.startsWith("•")
+          ? trimmedLine.slice(1).trimStart()
+          : line
+      }
+    })
+    .join("\n")
+}
+
+export function hasDotAtLineStart(text: string): boolean {
+  // Check if any line in the text starts with a dot
+  return text.split("\n").some((line) => line.trim().startsWith("•"))
 }

@@ -7,11 +7,13 @@ import { useFocusListeners } from "~hooks/useFocusListeners"
 import { useWindowSelection } from "~hooks/useWindowSelection"
 import {
   convertText,
+  hasDotAtLineStart,
   isBold,
   isBoldItalic,
   isItalic,
   isSerif,
-  isUnderlined
+  isUnderlined,
+  toggleLineDotStart
 } from "~utils/textUtils"
 
 export const getStyle = () => {
@@ -27,7 +29,8 @@ const Controllers = () => {
     isSerifSelected: false,
     isBoldSelected: false,
     isItalicSelected: false,
-    isUnderlineSelected: false
+    isUnderlineSelected: false,
+    isDotSelected: false
   })
 
   useEffect(() => {
@@ -35,21 +38,22 @@ const Controllers = () => {
       isSerifSelected: isSerif(selectedText),
       isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
       isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText),
-      isUnderlineSelected: isUnderlined(selectedText)
+      isUnderlineSelected: isUnderlined(selectedText),
+      isDotSelected: hasDotAtLineStart(selectedText)
     })
   }, [selectedText])
 
-  const applyStyle = (newActions: typeof actions) => {
+  const applyStyle = (newActions: typeof actions, text: string) => {
     if (
       !focusedElement ||
       !selection ||
       selection.rangeCount === 0 ||
-      selectedText.length === 0
+      text.length === 0
     )
       return
 
     const range = selection.getRangeAt(0)
-    const newText = convertText(selectedText, newActions)
+    let newText = convertText(text, newActions)
 
     if (
       focusedElement instanceof HTMLInputElement ||
@@ -83,7 +87,7 @@ const Controllers = () => {
 
     const newActions = { ...actions, [styleToToggle]: !actions[styleToToggle] }
     setActions(newActions)
-    applyStyle(newActions)
+    applyStyle(newActions, selectedText)
   }
 
   if (!focusedElement) return null
@@ -113,6 +117,11 @@ const Controllers = () => {
         label="𝚄̲"
         isActive={actions.isUnderlineSelected}
         onClick={(e) => toggle(e, "isUnderlineSelected")}
+      />
+      <StyleButton
+        label="•"
+        isActive={actions.isDotSelected}
+        onClick={(e) => toggle(e, "isDotSelected")}
       />
       <StyleButton
         label={actions.isSerifSelected ? "Serif" : "Sans"}
