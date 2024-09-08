@@ -15,8 +15,8 @@ export const StyleButton: React.FC<StyleButtonProps> = ({
 }) => {
   return (
     <button
-      className={`size-8 hover:bg-zinc-200 flex items-center justify-center transition-all rounded-md ${
-        isActive ? "bg-zinc-200" : ""
+      className={`size-8 hover:bg-zinc-200 dark:hover:bg-muted flex items-center p-1 justify-center transition-all rounded-sm ${
+        isActive ? "bg-muted" : ""
       } ${className}`}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}>
