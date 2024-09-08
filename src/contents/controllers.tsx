@@ -94,17 +94,32 @@ const Controllers = () => {
 
     const range = selection.getRangeAt(0)
     const newText = convertText(selectedText, localActions)
-    const newTextNode = document.createTextNode(newText)
-    range.deleteContents()
-    range.insertNode(newTextNode)
 
-    range.setStartAfter(newTextNode)
-    range.setEndAfter(newTextNode)
-    selection.removeAllRanges()
-    selection.addRange(range)
+    if (
+      focusedElement instanceof HTMLInputElement ||
+      focusedElement instanceof HTMLTextAreaElement
+    ) {
+      const start = focusedElement.selectionStart
+      const end = focusedElement.selectionEnd
+      if (start !== null && end !== null) {
+        const currentValue = focusedElement.value
+        focusedElement.value =
+          currentValue.substring(0, start) +
+          newText +
+          currentValue.substring(end)
+        focusedElement.setSelectionRange(start, start + newText.length)
+      }
+    } else {
+      range.deleteContents()
+      range.insertNode(document.createTextNode(newText))
+      range.setStart(range.endContainer, range.endOffset)
+    }
 
+    // Trigger input event to update the element's value
     const inputEvent = new Event("input", { bubbles: true, cancelable: true })
     focusedElement.dispatchEvent(inputEvent)
+
+    // Refocus the element
     focusedElement.focus()
   }
 
