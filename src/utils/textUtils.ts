@@ -56,18 +56,20 @@ export const convertText = (text: string, localActions: any) => {
 export function isSerif(text: string) {
   if (text.length === 0) return false
 
-  const code = text.codePointAt(0)
-  if (!code) return false
+  for (let i = 0; i < text.length; i++) {
+    const code = text.codePointAt(i)
+    if (!code) continue
 
-  for (const style of ["bold", "italic", "boldItalic"] as const) {
-    const ranges = UNICODES[style].serif
+    for (const style of ["bold", "italic", "boldItalic"] as const) {
+      const ranges = UNICODES[style].serif
 
-    if (
-      (code >= ranges.lowerA && code <= ranges.lowerZ) ||
-      (code >= ranges.upperA && code <= ranges.upperZ) ||
-      (ranges.zero && code >= ranges.zero && code <= ranges.nine)
-    ) {
-      return true
+      if (
+        (code >= ranges.lowerA && code <= ranges.lowerZ) ||
+        (code >= ranges.upperA && code <= ranges.upperZ) ||
+        (ranges.zero && code >= ranges.zero && code <= ranges.nine)
+      ) {
+        return true
+      }
     }
   }
 
@@ -76,9 +78,6 @@ export function isSerif(text: string) {
 
 export function isBold(text: string) {
   if (text.length === 0) return false
-
-  const code = text.codePointAt(0)
-  if (!code) return false
 
   const ranges = UNICODES.bold
   let boldCount = 0
@@ -98,7 +97,8 @@ export function isBold(text: string) {
       boldCount++
     }
   }
-  return boldCount > text.length / 4 // when italic, the length of the text is doubled
+
+  return boldCount > 0
 }
 
 export function isItalic(text: string) {
@@ -116,31 +116,36 @@ export function isItalic(text: string) {
       (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
       (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
       (code >= ranges.sans.upperA && code <= ranges.sans.upperZ)
-    )
+    ) {
       italicCount++
-    // Skip the low surrogate for surrogate pairs
+    }
   }
 
-  // Consider it italic if more than half of the characters are italic
-  return italicCount > text.length / 4 // when italic, the length of the text is doubled
+  return italicCount > 0
 }
 
 export function isBoldItalic(text: string) {
   if (text.length === 0) return false
 
-  const code = text.codePointAt(0)
-  if (!code) return false
+  for (let i = 0; i < text.length; i++) {
+    const code = text.codePointAt(i)
+    if (!code) continue
 
-  const ranges = UNICODES.boldItalic
+    const ranges = UNICODES.boldItalic
 
-  return (
-    (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
-    (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
-    (code >= ranges.serif.zero && code <= ranges.serif.nine) ||
-    (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
-    (code >= ranges.sans.upperA && code <= ranges.sans.upperZ) ||
-    (code >= ranges.sans.zero && code <= ranges.sans.nine)
-  )
+    if (
+      (code >= ranges.serif.lowerA && code <= ranges.serif.lowerZ) ||
+      (code >= ranges.serif.upperA && code <= ranges.serif.upperZ) ||
+      (code >= ranges.serif.zero && code <= ranges.serif.nine) ||
+      (code >= ranges.sans.lowerA && code <= ranges.sans.lowerZ) ||
+      (code >= ranges.sans.upperA && code <= ranges.sans.upperZ) ||
+      (code >= ranges.sans.zero && code <= ranges.sans.nine)
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
 export function isUnderlined(text: string) {
   return text.includes(UNDERLINE_CHAR)
