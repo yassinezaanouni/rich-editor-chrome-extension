@@ -10,9 +10,13 @@ export const convertText = (text: string, localActions: any) => {
   // Remove existing underlines first
   text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
 
+  // Remove existing underlines and strikethroughs first
+  text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
+  text = text.replace(new RegExp(UNICODES.strikethrough.char, "g"), "")
+
   let result = text
     .split("")
-    .map((char) => {
+    .map((char, index) => {
       let charCode = char.charCodeAt(0)
       let newChar = char
 
@@ -40,7 +44,12 @@ export const convertText = (text: string, localActions: any) => {
           newChar = String.fromCodePoint(selectedStyle.zero + (charCode - 48))
         }
       }
+      // Apply strikethrough if selected
+      if (localActions.isStrikethroughSelected && char !== " ") {
+        if (index === 0) newChar = UNICODES.strikethrough.char + newChar
 
+        newChar += UNICODES.strikethrough.char
+      }
       // Apply underline if selected
       if (localActions.isUnderlineSelected) {
         newChar += UNDERLINE_CHAR
@@ -173,4 +182,8 @@ export function toggleLineDotStart(
 export function hasDotAtLineStart(text: string): boolean {
   // Check if any line in the text starts with a dot
   return text.split("\n").some((line) => line.trim().startsWith("•"))
+}
+
+export function isStrikethrough(text: string): boolean {
+  return text.includes(UNICODES.strikethrough.char)
 }

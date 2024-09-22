@@ -12,6 +12,7 @@ import {
   isBoldItalic,
   isItalic,
   isSerif,
+  isStrikethrough,
   isUnderlined,
   toggleLineDotStart
 } from "~utils/textUtils"
@@ -30,7 +31,8 @@ const Controllers = () => {
     isBoldSelected: false,
     isItalicSelected: false,
     isUnderlineSelected: false,
-    isDotSelected: false
+    isDotSelected: false,
+    isStrikethroughSelected: false
   })
 
   useEffect(() => {
@@ -39,7 +41,8 @@ const Controllers = () => {
       isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
       isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText),
       isUnderlineSelected: isUnderlined(selectedText),
-      isDotSelected: hasDotAtLineStart(selectedText)
+      isDotSelected: hasDotAtLineStart(selectedText),
+      isStrikethroughSelected: isStrikethrough(selectedText)
     })
   }, [selectedText])
 
@@ -117,6 +120,11 @@ const Controllers = () => {
         label="𝚄̲"
         isActive={actions.isUnderlineSelected}
         onClick={(e) => toggle(e, "isUnderlineSelected")}
+      />
+      <StyleButton
+        label="S̶"
+        isActive={actions.isStrikethroughSelected}
+        onClick={(e) => toggle(e, "isStrikethroughSelected")}
       />
       <StyleButton
         label="•"

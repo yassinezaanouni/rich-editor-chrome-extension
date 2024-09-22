@@ -48,5 +48,8 @@ export const UNICODES = {
       zero: 0x1d7ec,
       nine: 0x1d7f5
     }
+  },
+  strikethrough: {
+    char: "\u0336" // Combining long stroke overlay
   }
 } as const
