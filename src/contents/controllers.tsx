@@ -1,10 +1,11 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoGetOverlayAnchor } from "plasmo"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { StyleButton } from "~components/StyleButton"
 import { useFocusListeners } from "~hooks/useFocusListeners"
 import { useWindowSelection } from "~hooks/useWindowSelection"
+import { COMMON_EMOJIS } from "~utils/constants"
 import {
   convertText,
   hasDotAtLineStart,
@@ -34,7 +35,7 @@ const Controllers = () => {
     isDotSelected: false,
     isStrikethroughSelected: false
   })
-
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   useEffect(() => {
     setActions({
       isSerifSelected: isSerif(selectedText),
@@ -47,7 +48,7 @@ const Controllers = () => {
   }, [selectedText])
 
   const applyStyle = (newActions: typeof actions, text: string) => {
-    const range = selection.getRangeAt(0)
+    const range = selection?.getRangeAt(0)
     let newText = convertText(text, newActions)
 
     if (
@@ -80,26 +81,61 @@ const Controllers = () => {
     event.preventDefault()
     event.stopPropagation()
 
-    if (
-      !focusedElement ||
-      !selection ||
-      selection.rangeCount === 0 ||
-      selectedText.length === 0
-    )
-      return
+    if (styleToToggle === "isDotSelected") {
+      if (!focusedElement) {
+        return
+      }
+    } else {
+      if (
+        !focusedElement ||
+        !selection ||
+        selection.rangeCount === 0 ||
+        selectedText.length === 0
+      ) {
+        return
+      }
+    }
 
     const newActions = { ...actions, [styleToToggle]: !actions[styleToToggle] }
     setActions(newActions)
     applyStyle(newActions, selectedText)
   }
+  const insertEmoji = (emoji: string) => {
+    if (!focusedElement) return
 
+    if (
+      focusedElement instanceof HTMLInputElement ||
+      focusedElement instanceof HTMLTextAreaElement
+    ) {
+      const start = focusedElement.selectionStart
+      const end = focusedElement.selectionEnd
+      if (start !== null && end !== null) {
+        const currentValue = focusedElement.value
+        focusedElement.value =
+          currentValue.substring(0, start) + emoji + currentValue.substring(end)
+        focusedElement.setSelectionRange(
+          start + emoji.length,
+          start + emoji.length
+        )
+      }
+    } else {
+      const range = selection?.getRangeAt(0)
+      if (range) {
+        range.deleteContents()
+        range.insertNode(document.createTextNode(emoji))
+        range.collapse(false)
+      }
+    }
+    focusedElement.focus()
+  }
   if (!focusedElement) return null
 
   const { top = 0, left = 0 } = focusedElement?.getBoundingClientRect() || {}
 
   return (
     <div
-      className="border flex items-center gap-1 p-[6px] overflow-hidden rounded-[4px] dark"
+      onMouseDown={(e) => e.preventDefault()}
+      className="border flex items-center gap-1 p-[6px]  rounded-[4px] dark"
       style={{
         position: "absolute",
         top: top + window.scrollY,
@@ -137,6 +173,28 @@ const Controllers = () => {
         className="dark:bg-muted w-auto p-2"
         onClick={(e) => toggle(e, "isSerifSelected")}
       />
+
+      <div className="group relative inline-block">
+        <StyleButton
+          label={COMMON_EMOJIS[0].label}
+          isActive={false}
+          onClick={() => insertEmoji(COMMON_EMOJIS[0].label)}
+        />
+        <div className="absolute left-0 z-10 w-[150px] mt-1 bg-background border border-border rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+          <div className="grid grid-cols-3 gap-1 p-2">
+            {COMMON_EMOJIS.slice(1).map((emoji) => (
+              <StyleButton
+                isActive={false}
+                label={emoji.label}
+                key={emoji.name}
+                className="hover:bg-accent flex items-center justify-center w-8 h-8 rounded"
+                onClick={() => insertEmoji(emoji.label)}
+                title={emoji.name}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

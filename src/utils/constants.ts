@@ -53,3 +53,16 @@ export const UNICODES = {
     char: "\u0336" // Combining long stroke overlay
   }
 } as const
+
+export const COMMON_EMOJIS = [
+  { label: "✅", name: "Check Mark" },
+  { label: "✓", name: "Check Mark" },
+  { label: "🚀", name: "Rocket" },
+  { label: "🎉", name: "Party Popper" },
+  { label: "💎", name: "Blue Diamond" },
+  { label: "✨", name: "Sparkles" },
+  { label: "💸", name: "Money with Wings" },
+  { label: "🏆", name: "Trophy" },
+  { label: "👌", name: "OK Hand" },
+  { label: "🔥", name: "Fire" }
+]
