@@ -70,7 +70,8 @@ export const COMMON_DOTS = [
   { label: "•", name: "Bullet" },
   { label: "●", name: "Circle Filled" },
   { label: "○", name: "Circle" },
-  { label: "■", name: "Square" },
+  { label: "♦", name: "Diamond" },
   { label: "▪", name: "Small Square" },
+  { label: "■", name: "Square" },
   { label: "►", name: "Triangle" }
 ]
