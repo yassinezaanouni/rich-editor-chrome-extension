@@ -1,17 +1,15 @@
 import { COMMON_DOTS, UNICODES } from "~utils/constants"
 
-const UNDERLINE_CHAR = "\u0332" // Unicode for "combining low line" (single underline)
-
 export const convertText = (text: string, localActions: any) => {
   text = text.normalize("NFKD")
 
   // text = toggleLineDotStart(text, localActions.isDotSelected)
 
   // Remove existing underlines first
-  text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
+  text = text.replace(new RegExp(UNICODES.underline.char, "g"), "")
 
   // Remove existing underlines and strikethroughs first
-  text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
+  text = text.replace(new RegExp(UNICODES.underline.char, "g"), "")
   text = text.replace(new RegExp(UNICODES.strikethrough.char, "g"), "")
 
   let result = text
@@ -52,7 +50,7 @@ export const convertText = (text: string, localActions: any) => {
       }
       // Apply underline if selected
       if (localActions.isUnderlineSelected) {
-        newChar += UNDERLINE_CHAR
+        newChar += UNICODES.underline.char
       }
 
       return newChar
@@ -157,7 +155,7 @@ export function isBoldItalic(text: string) {
   return false
 }
 export function isUnderlined(text: string) {
-  return text.includes(UNDERLINE_CHAR)
+  return text.includes(UNICODES.underline.char)
 }
 
 export function toggleLineDotStart(

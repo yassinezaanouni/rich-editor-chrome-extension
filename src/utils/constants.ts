@@ -51,6 +51,9 @@ export const UNICODES = {
   },
   strikethrough: {
     char: "\u0336" // Combining long stroke overlay
+  },
+  underline: {
+    char: "\u0332" // Unicode for "combining low line" (single underline)
   }
 } as const
 
