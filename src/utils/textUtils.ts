@@ -1,11 +1,11 @@
-import { UNICODES } from "~utils/constants"
+import { COMMON_DOTS, UNICODES } from "~utils/constants"
 
 const UNDERLINE_CHAR = "\u0332" // Unicode for "combining low line" (single underline)
 
 export const convertText = (text: string, localActions: any) => {
   text = text.normalize("NFKD")
 
-  text = toggleLineDotStart(text, localActions.isDotSelected)
+  // text = toggleLineDotStart(text, localActions.isDotSelected)
 
   // Remove existing underlines first
   text = text.replace(new RegExp(UNDERLINE_CHAR, "g"), "")
@@ -179,9 +179,16 @@ export function toggleLineDotStart(
     .join("\n")
 }
 
-export function hasDotAtLineStart(text: string): boolean {
-  // Check if any line in the text starts with a dot
-  return text.split("\n").some((line) => line.trim().startsWith("•"))
+export function hasDotAtLineStart(line: string): boolean {
+  return COMMON_DOTS.some((dot) => line.startsWith(dot.label))
+}
+
+export function hasDotAtMultipleLineStart(text: string): boolean {
+  // has at least 1 dot at 1 line start
+  const lines = text.split("\n")
+  return lines.some((line) => {
+    return hasDotAtLineStart(line)
+  })
 }
 
 export function isStrikethrough(text: string): boolean {

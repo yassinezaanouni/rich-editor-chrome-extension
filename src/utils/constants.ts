@@ -66,3 +66,11 @@ export const COMMON_EMOJIS = [
   { label: "👌", name: "OK Hand" },
   { label: "🔥", name: "Fire" }
 ]
+export const COMMON_DOTS = [
+  { label: "•", name: "Bullet" },
+  { label: "●", name: "Circle Filled" },
+  { label: "○", name: "Circle" },
+  { label: "■", name: "Square" },
+  { label: "▪", name: "Small Square" },
+  { label: "►", name: "Triangle" }
+]

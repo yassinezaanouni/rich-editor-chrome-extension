@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from "react"
 import { StyleButton } from "~components/StyleButton"
 import { useFocusListeners } from "~hooks/useFocusListeners"
 import { useWindowSelection } from "~hooks/useWindowSelection"
-import { COMMON_EMOJIS } from "~utils/constants"
+import { COMMON_DOTS, COMMON_EMOJIS } from "~utils/constants"
 import {
   convertText,
   hasDotAtLineStart,
+  hasDotAtMultipleLineStart,
   isBold,
   isBoldItalic,
   isItalic,
@@ -35,14 +36,13 @@ const Controllers = () => {
     isDotSelected: false,
     isStrikethroughSelected: false
   })
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   useEffect(() => {
     setActions({
       isSerifSelected: isSerif(selectedText),
       isBoldSelected: isBold(selectedText) || isBoldItalic(selectedText),
       isItalicSelected: isItalic(selectedText) || isBoldItalic(selectedText),
       isUnderlineSelected: isUnderlined(selectedText),
-      isDotSelected: hasDotAtLineStart(selectedText),
+      isDotSelected: hasDotAtMultipleLineStart(selectedText),
       isStrikethroughSelected: isStrikethrough(selectedText)
     })
   }, [selectedText])
@@ -128,6 +128,55 @@ const Controllers = () => {
     }
     focusedElement.focus()
   }
+
+  const toggleDot = (selectedText: string, dotLabel: string) => {
+    const range = selection?.getRangeAt(0)
+    let newText = selectedText
+      .split("\n")
+      .map((line) => {
+        console.log({ line })
+        console.log(hasDotAtLineStart(line))
+        if (hasDotAtLineStart(line)) {
+          const oldDotLabel = line.split(" ")[0]
+          console.log({ oldDotLabel, dotLabel })
+          if (oldDotLabel !== dotLabel) {
+            return `${dotLabel} ${line.slice(1).trimStart()}`
+          }
+          return line.slice(1).trimStart()
+        } else {
+          return `${dotLabel} ${line}`
+        }
+      })
+      .join("\n")
+
+    if (
+      focusedElement instanceof HTMLInputElement ||
+      focusedElement instanceof HTMLTextAreaElement
+    ) {
+      const start = focusedElement.selectionStart
+      const end = focusedElement.selectionEnd
+      if (start !== null && end !== null) {
+        const currentValue = focusedElement.value
+        focusedElement.value =
+          currentValue.substring(0, start) +
+          newText +
+          currentValue.substring(end)
+        if (!selectedText)
+          focusedElement.setSelectionRange(
+            start + dotLabel.length,
+            start + dotLabel.length
+          )
+        else focusedElement.setSelectionRange(start, start + newText.length)
+      }
+    } else {
+      range.deleteContents()
+      range.insertNode(document.createTextNode(newText))
+      range.setStart(range.endContainer, range.endOffset)
+    }
+
+    focusedElement.focus()
+  }
+
   if (!focusedElement) return null
 
   const { top = 0, left = 0 } = focusedElement?.getBoundingClientRect() || {}
@@ -162,11 +211,36 @@ const Controllers = () => {
         isActive={actions.isStrikethroughSelected}
         onClick={(e) => toggle(e, "isStrikethroughSelected")}
       />
-      <StyleButton
+      {/* <StyleButton
         label="•"
         isActive={actions.isDotSelected}
         onClick={(e) => toggle(e, "isDotSelected")}
-      />
+      /> */}
+      <div className="group relative inline-block">
+        <StyleButton
+          label={COMMON_DOTS[0].label}
+          key={COMMON_DOTS[0].name}
+          isActive={actions.isDotSelected}
+          onClick={(e) => toggleDot(selectedText, COMMON_DOTS[0].label)}
+        />
+        <div className="absolute left-0 z-10 w-[150px] mt-1 bg-background border border-border rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+          <div className="grid grid-cols-3 gap-1 p-2">
+            {COMMON_DOTS.slice(1).map((dot) => (
+              <StyleButton
+                isActive={false}
+                label={dot.label}
+                key={dot.name}
+                className="hover:bg-accent flex items-center justify-center w-8 h-8 rounded"
+                onClick={(e) => {
+                  // setLastDotSelected(dot.label)
+                  toggleDot(selectedText, dot.label)
+                }}
+                title={dot.name}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
       <StyleButton
         label={actions.isSerifSelected ? "Serif" : "Sans"}
         isActive={true}
