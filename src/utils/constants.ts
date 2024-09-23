@@ -69,12 +69,32 @@ export const COMMON_EMOJIS = [
   { label: "👌", name: "OK Hand" },
   { label: "🔥", name: "Fire" }
 ]
+
 export const COMMON_DOTS = [
   { label: "•", name: "Bullet" },
-  { label: "●", name: "Circle Filled" },
   { label: "○", name: "Circle" },
-  { label: "♦", name: "Diamond" },
+  { label: "●", name: "Circle Filled" },
+  { label: "⚫", name: "Black Large Circle" },
   { label: "▪", name: "Small Square" },
   { label: "■", name: "Square" },
-  { label: "►", name: "Triangle" }
+  { label: "♦", name: "Diamond" },
+  { label: "►", name: "Triangle" },
+  { label: "∴", name: "Therefore" },
+  { label: "∵", name: "Because" }
 ]
+
+// export const COMMON_DOTS = [
+//   { label: "•", name: "Bullet" },
+//   { label: "·", name: "Midpoint" },
+//   { label: "∘", name: "Call Operator" },
+//   { label: "○", name: "Circle" },
+//   { label: "●", name: "Circle Filled" },
+//   { label: "⚫", name: "Black Large Circle" },
+//   { label: "⚪", name: "White Large Circle" },
+//   { label: "♦", name: "Diamond" },
+//   { label: "▪", name: "Small Square" },
+//   { label: "■", name: "Square" },
+//   { label: "►", name: "Triangle" },
+//   { label: "∴", name: "Therefore" },
+//   { label: "∵", name: "Because" }
+// ]
