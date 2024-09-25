@@ -11,10 +11,10 @@ export const isEditableElement = (element: HTMLElement): boolean => {
   return (
     element.isContentEditable ||
     element.tagName === "TEXTAREA" ||
-    (element.tagName === "INPUT" &&
-      editableTypes.includes(
-        (element as HTMLInputElement).type.toLowerCase()
-      )) ||
+    // (element.tagName === "INPUT" &&
+    //   editableTypes.includes(
+    //     (element as HTMLInputElement).type.toLowerCase()
+    //   )) ||
     element.getAttribute("role") === "textbox" ||
     element.classList.contains("public-DraftEditor-content") ||
     element.classList.contains("ql-editor")
